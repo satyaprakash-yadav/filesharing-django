@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- bootstrap link -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+
+    <!-- js link -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    />
+
+    <link rel="icon" href="{% static 'home/images/home.png' %}" />
+    <title>Home Page</title>
+    <style>
+      .fileinput {
+        width: 400px;
+        height: 80px;
+        border: 3px dashed gray;
+        text-align: center;
+        line-height: 70px;
+        margin: 0 auto;
+        border-radius: 10px;
+      }
+
+      #urldiv {
+        display: none;
+        width: 60%;
+        margin: 0 auto;
+      }
+      #url {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div class="container">
+      <!-- image container -->
+      <div class="container text-center my-5">
+        <img
+          src="{% static 'home/images/home.png' %}"
+          alt="No Logo"
+          height="200px"
+        />
+      </div>
+
+      <!-- drop area -->
+      <h6 class="fileinput font-monospace" id="fileinput" style="color: blue; cursor: pointer">
+        Drag and Drop Files Here
+      </h6>
+
+      <!-- msg -->
+      <div class="container my-2 text-center">
+        <p class="lead  fs-6 fw-normal" id="fileMsg"></p>
+      </div>
+
+      <!-- upload file button -->
+      <div class="text-center my-4">
+        <button class="btn btn-success font-monospace" onclick="UploadFiles()">
+          Upload <i class="bi bi-cloud-arrow-up-fill"></i>
+        </button>
+      </div>
+
+      <!-- click -->
+      <div class="text-center" id="urldiv">
+        <input type="text" id="url" />
+
+        <button class="btn btn-secondary btn-sm my-2 font-monospace" onclick="CopyClipboard()">
+          Copy Link <i class="bi bi-clipboard"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+      // data post part start from here
+
+      var url = null; // response url to user
+      var AllFiles = null; // get all user drag and drop file
+      var fileMsg = document.getElementById("fileMsg");
+      var data = {}; // convert AllFiles into object
+
+      const dropzone = document.querySelector("#fileinput");
+
+      dropzone.addEventListener("dragover", (e) => {
+        // listen the event if the event occur then parameter passed
+        e.preventDefault(); // prevent default browser behavior
+        // console.log('dragover event')
+      });
+
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+
+        AllFiles = e.dataTransfer.files;
+
+        fileMsg.innerHTML = `${AllFiles.length} files uploaded successfully !!!`;
+        // console.log(AllFiles)
+        // console.log(typeof(AllFiles))
+      });
+
+      function UploadFiles() {
+        if (!AllFiles) {
+          alert("Please drag file before upload!");
+        } else {
+          console.log("Error Part");
+
+          var formdata = new FormData();
+
+          for (var i = 0; i < AllFiles.length; i++) {
+            formdata.append("files", AllFiles[i]);
+          }
+          // console.log(formdata)
+
+          fetch("/handle/", { method: "POST", body: formdata })
+            .then((response) => response.json())
+            .then((result) => {
+              url = `http://127.0.0.1:8000/download/${result.data.folder}/`;
+
+              document.getElementById("url").value = url;
+
+              document.getElementById("urldiv").style.display = "block";
+            });
+        }
+      }
+
+      // copy link function
+      function CopyClipboard() {
+        // Get the text field
+        var copyText = document.getElementById("url");
+
+        // Select the text field
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); //For mobile devices
+
+        // copy the text inside the text field
+        navigator.clipboard.writeText(copyText.value);
+      }
+    </script>
+  </body>
+</html>
